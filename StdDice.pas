@@ -44,6 +44,10 @@ type
     FLocked: Boolean;
     FValue: Integer; // Actual Value of the Dice
     FOnRotate: TRotateEvent;
+    FMaxRolls: Integer;
+    FIsMaxRolls: Boolean;
+    FCurrentRoll: Integer;
+    FResetRoll: Boolean;
     function GetColorValue: TColor;
     procedure SetImageColor1(const Value: TColor);
     procedure SetImageColor2(const Value: TColor);
@@ -62,6 +66,10 @@ type
     procedure SetImageValue5(newValue: TBitmap); virtual;
     procedure SetImageValue6(newValue: TBitmap); virtual;
     procedure SetValue(newValue: Integer); virtual;
+    procedure SetMaxRolls(newValue: Integer); virtual;
+    procedure SetCurrentRoll(newValue: Integer); virtual;
+    procedure SetResetRoll(newValue: Boolean); virtual;
+    procedure SetIsMaxRolls(newValue: Boolean); virtual;
     { Event triggers: }
     procedure TriggerRotateEvent(NewValue: Integer); virtual;
     procedure SetRotate(newValue: Boolean); virtual;
@@ -86,6 +94,10 @@ type
     property OnRotate: TRotateEvent read FOnRotate write FOnRotate;
     property Rotate: Boolean read GetRotate write SetRotate;
     property RotationSpeed: Cardinal read GetRotationSpeed write SetRotationSpeed default 50;
+    property MaxRolls: Integer read FMaxRolls write SetMaxRolls default 0;
+    property IsMaxRolls: Boolean read FIsMaxRolls write SetIsMaxRolls;
+    property CurrentRoll: Integer read FCurrentRoll write SetCurrentRoll;
+    property ResetRoll: Boolean read FResetRoll write SetResetRoll;
     { Inherited properties: }
     property Canvas;
     property Anchors: byte read FDummyProperty;  { Hidden Property }
@@ -162,7 +174,12 @@ procedure TStandardDice.SetImageValue6(newValue: TBitmap);
 { Sets data member FImageValue6 to newValue. }
 begin
   FImageValue6.Assign(newValue);
-end;  { SetValue6 }
+end;  procedure TStandardDice.SetIsMaxRolls(newValue: Boolean);
+begin
+  FIsMaxRolls := newValue;
+end;
+
+{ SetValue6 }
 
 procedure TStandardDice.SetValue(newValue: Integer);  { protected }
 begin
@@ -190,6 +207,14 @@ begin
 end;  { TriggerRotateEvent }
 
 { Exposed properties' Read/Write methods: }
+procedure TStandardDice.SetResetRoll(newValue: Boolean);
+begin
+  FResetRoll := newValue;
+
+  if FResetRoll then FCurrentRoll := 0;
+
+end;
+
 procedure TStandardDice.SetRotate(newValue: Boolean);
 { Sets the EmbeddedTimer subcomponent's Enabled property to newValue. }
 begin
@@ -239,7 +264,7 @@ begin
       4: Value := 5;
       5: Value := 6;
     end;    // case
-    
+
   end;
 end;  { Timer_EmbeddedTimerHandler }
 
@@ -297,6 +322,17 @@ begin
   end;
 end;
 
+procedure TStandardDice.SetCurrentRoll(newValue: Integer);
+begin
+  FCurrentRoll := newValue;
+
+  if FCurrentRoll = FMaxRolls then
+    FIsMaxRolls := True
+  else
+    FIsMaxRolls := False;
+
+end;
+
 procedure TStandardDice.SetImageColor1(const Value: TColor);
 begin
   FImageColor1 := Value;
@@ -330,6 +366,11 @@ end;
 procedure TStandardDice.SetLocked(const Value: Boolean);
 begin
   FLocked := Value;
+end;
+
+procedure TStandardDice.SetMaxRolls(newValue: Integer);
+begin
+  FMaxRolls := newValue;
 end;
 
 initialization
